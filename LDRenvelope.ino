@@ -25,6 +25,8 @@ volatile bool envelope = false;
 int brightness = 0;
 volatile int brightnessTarget = 0;
 
+//brightness values stored in a 2D array for ease of access. brightness of LED controls analogue circuitry through a light-dependent resistor,
+//so different responses can be controlled by simply using code to change the brightness of that LED in different patterns
 byte ledLookupTable[2][17] = {  { 0,  1,  2,  3,  4,  6,  8,  12,  16,  23,  32,  45,  64,  90, 128, 180, 255  },         //creates a linear attack/release curve
                                 { 0, 16, 32, 48, 64, 80, 96, 112, 128, 144, 160, 176, 192, 208, 224, 240, 255  }    };    //creates an exponential attack/release curve
 
@@ -37,11 +39,7 @@ void setup()
   SREG  |= B10000000;                 //global interrupt enable
   
   pinMode(inputPin, INPUT);           //interrupt trigger pin
-  //pinMode(attackDial, INPUT);         
-  //pinMode(releaseDial, INPUT);    
   pinMode(LED, OUTPUT);               //used to trigger the next block
-
-  //analogWrite(LED, 0);
   
   sei();                              //last line of setup - enable interrupts after setup
 }
@@ -58,14 +56,12 @@ void envelopeCreator(int env)
     if(brightness < 16)
       brightness++;
     for(int i=0; i<(envSel[env][0] / 16); i++)    //for this amount of time determined by the envelope array
-    //for(int i=0; i<10; i++)   //for this amount of time determined by the envelope array
-      delay(1);
+      delay(1);                                   //should ideally be done with internal interrupt
   }
   
   if(brightness == 16)                //hold
   {
     for(int i=0; i<(envSel[env][1]); i++)        //for this amount of time determined by the envelope array
-    //for(int i=0; i<500; i++)   //for this amount of time determined by the envelope array
       delay(1);
     brightnessTarget = 0;
   }
@@ -75,7 +71,6 @@ void envelopeCreator(int env)
     if(brightness > 0)
       brightness--;
     for(int i=0; i<(envSel[env][2] / 16); i++)   //for this amount of time determined by the envelope array
-    //for(int i=0; i<10; i++)   //for this amount of time determined by the envelope array
       delay(1);
   }
   analogWrite(LED, ledLookupTable[envSel[env][3]][brightness]);
@@ -86,28 +81,19 @@ void loop()
 {
   mode = map(analogRead(envDial),0,1023,0,3);
 
-  if(mode !=0)    //custom envelope modes
+  if(mode !=0)    //switch through custom envelope modes by turning dial
   {
     envelopeCreator(mode-1);
   }
-  else            //tremolo mode
+  else            //higher portion of dial is reserved for tremolo mode, the same dial controls frequency of tremolo effect
   {
-    //brightnessTarget = 0;
     tremolo();
-
-    /*
-    analogWrite(LED, 255);
-    brightnessTarget = 16;
-    delay(freq);
-    analogWrite(LED, 120);
-    delay(freq);
-    */
   }
 }
 
 void tremolo()
 {
-  int freq = map(analogRead(envDial), 0, 512, 1, 10);   //scale the end portion of the potentiometer to double as a frequency tuner
+  int freq = map(analogRead(envDial), 0, 512, 1, 10);   //scale the end portion of the potentiometer to double as a frequency tuner, save on hardware
   analogWrite(LED, tremLevel);
 
   tremLevel += fadeAmount;
@@ -119,73 +105,3 @@ void tremolo()
   }
   delay(freq);
 }
-
-/*
-void loop()
-{
-  if(envelope)
-  {
-    if(brightness <= 18)                                
-    {
-      brightness++;
-      analogWrite(LED, ledLookupTable[brightness]);
-      for(int i=0; i<10; i++)
-      {
-        delay(1);
-      }
-    }
-    else
-    {
-      brightness = 0;
-      analogWrite(LED, 0);
-      envelope = false;
-    }
-  }
-}
-*/
-
-/*
-void loop()
-{ 
-  //A = map(analogRead(attackDial), 0, 1023, 0, 50);
-  //R = map(analogRead(releaseDial), 0, 1023, 0, 50);
-  
-  if(envelope)
-  {
-    analogWrite(LED, brightness);
-
-    if(brightness < brightnessTarget)
-    {
-      if(attacking)
-      {
-        brightness++;
-        delay(A);
-      }
-      else
-      {
-        brightness--;
-        delay(H);
-      }
-    }
-    else
-    {
-      if(canHold)
-      {
-        delay(H);
-        canHold = false;
-        brightnessTarget = 0;
-        attacking = false;
-      }
-      else
-        envelope = false;
-    }
-  } 
-    
-    
-    //count up from attack min to attack max
-    //delay for hold time
-    //count down from release max to release min
-    
-}
-
-*/
