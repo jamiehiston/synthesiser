@@ -1,3 +1,8 @@
+//======================================================================
+//========== Vactrol-Controlled Volume Envelope Generator ==============
+//================ Created by Jamie Smith, 2021 =========================
+//======================================================================
+
 // Requires headers for AVR defines and ISR function
 #include <avr/io.h>
 #include <avr/interrupt.h>
