@@ -1,3 +1,8 @@
+//========================================================
+//======== Voltage-Controlled Oscillator Module ==========
+//=========== Created by Jamie Smith, 2021 ===============
+//========================================================
+
 const int output = 1;     //pin6 - can be PB1 or PB4, PB4 works better for Tone because we can use hardware output compare
 const int trigOut = 0;    //pin5
 int noteIn = A3;          //pin2
